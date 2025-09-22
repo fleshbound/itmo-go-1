@@ -11,15 +11,11 @@ import (
 
 const (
 	serverURL    = "http://srv.msk01.gigacorp.local/_stats"
-	pollInterval = 30 * time.Second // Интервал опроса (можно изменить)
-	
-	// Пороговые значения
-	loadThreshold      = 30.0
-	memoryThreshold    = 0.8  // 80%
-	diskThreshold      = 0.9  // 90%
-	networkThreshold   = 0.9  // 90%
-	
-	// Константы для преобразования единиц
+	pollInterval = 5 * time.Second
+	loadThreshold      = 30
+	memoryThreshold    = 80  // 80%
+	diskThreshold      = 90  // 90%
+	networkThreshold   = 90  // 90%
 	bytesInMb     = 1024 * 1024
 	bytesInMbit   = 125000 // 1 Mbit/s = 125,000 bytes/s
 )
@@ -115,31 +111,34 @@ func fetchStats() (*ServerStats, error) {
 }
 
 func checkThresholds(stats *ServerStats) {
-	if stats.LoadAverage > loadThreshold {
-		fmt.Printf("Load Average is too high: %.2f\n", stats.LoadAverage)
+	// Load Average
+	if stats.LoadAverage > uint64(loadThreshold) {
+		fmt.Printf("Load Average is too high: %d\n", stats.LoadAverage)
 	}
 	
+	// Memory usage
 	if stats.TotalMemory > 0 {
-		memoryUsage := float64(stats.UsedMemory) / float64(stats.TotalMemory)
-		if memoryUsage > memoryThreshold {
-			memoryPercent := memoryUsage * 100
-			fmt.Printf("Memory usage too high: %.1f%%\n", memoryPercent)
+		memoryPercent := (stats.UsedMemory * 100) / stats.TotalMemory
+		if memoryPercent > uint64(memoryThreshold) {
+			fmt.Printf("Memory usage too high: %d%%\n", memoryPercent)
 		}
 	}
 	
+	// Disk space
 	if stats.TotalDisk > 0 {
-		diskUsage := float64(stats.UsedDisk) / float64(stats.TotalDisk)
-		if diskUsage > diskThreshold {
-			freeSpace := float64(stats.TotalDisk - stats.UsedDisk) / float64(bytesInMb)
-			fmt.Printf("Free disk space is too low: %.1f Mb left\n", freeSpace)
+		diskPercent := (stats.UsedDisk * 100) / stats.TotalDisk
+		if diskPercent > uint64(diskThreshold) {
+			freeSpaceMB := (stats.TotalDisk - stats.UsedDisk) / bytesInMb
+			fmt.Printf("Free disk space is too low: %d Mb left\n", freeSpaceMB)
 		}
 	}
 	
+	// Network bandwidth
 	if stats.TotalNetwork > 0 {
-		networkUsage := float64(stats.UsedNetwork) / float64(stats.TotalNetwork)
-		if networkUsage > networkThreshold {
-			freeBandwidth := float64(stats.TotalNetwork - stats.UsedNetwork) / float64(bytesInMbit)
-			fmt.Printf("Network bandwidth usage high: %.1f Mbit/s available\n", freeBandwidth)
+		networkPercent := (stats.UsedNetwork * 100) / stats.TotalNetwork
+		if networkPercent > uint64(networkThreshold) {
+			freeBandwidthMbit := (stats.TotalNetwork - stats.UsedNetwork) / bytesInMbit
+			fmt.Printf("Network bandwidth usage high: %d Mbit/s available\n", freeBandwidthMbit)
 		}
 	}
 }
