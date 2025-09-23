@@ -16,8 +16,19 @@ const (
 	memoryThreshold    = 80  // 80%
 	diskThreshold      = 90  // 90%
 	networkThreshold   = 90  // 90%
-	bytesInMb     = 1000_000
+	bytesInMb     = 1024 * 1024
+	bytesInMbit   = 1000_000
 )
+
+type ServerStats struct {
+	LoadAverage         uint64
+	TotalMemory         uint64
+	UsedMemory          uint64
+	TotalDisk           uint64
+	UsedDisk            uint64
+	TotalNetwork        uint64
+	UsedNetwork         uint64
+}
 
 func main() {
 	errorCount := 0
@@ -41,16 +52,6 @@ func main() {
 		checkThresholds(stats)
 		time.Sleep(pollInterval)
 	}
-}
-
-type ServerStats struct {
-	LoadAverage         uint64
-	TotalMemory         uint64
-	UsedMemory          uint64
-	TotalDisk           uint64
-	UsedDisk            uint64
-	TotalNetwork        uint64
-	UsedNetwork         uint64
 }
 
 func fetchStats() (*ServerStats, error) {
@@ -110,12 +111,10 @@ func fetchStats() (*ServerStats, error) {
 }
 
 func checkThresholds(stats *ServerStats) {
-	// Load Average
 	if stats.LoadAverage > uint64(loadThreshold) {
 		fmt.Printf("Load Average is too high: %d\n", stats.LoadAverage)
 	}
 	
-	// Memory usage
 	if stats.TotalMemory > 0 {
 		memoryPercent := (stats.UsedMemory * 100) / stats.TotalMemory
 		if memoryPercent > uint64(memoryThreshold) {
@@ -123,7 +122,6 @@ func checkThresholds(stats *ServerStats) {
 		}
 	}
 	
-	// Disk space
 	if stats.TotalDisk > 0 {
 		diskPercent := (stats.UsedDisk * 100) / stats.TotalDisk
 		if diskPercent > uint64(diskThreshold) {
@@ -132,11 +130,10 @@ func checkThresholds(stats *ServerStats) {
 		}
 	}
 	
-	// Network bandwidth
 	if stats.TotalNetwork > 0 {
 		networkPercent := (stats.UsedNetwork * 100) / stats.TotalNetwork
 		if networkPercent > uint64(networkThreshold) {
-			freeBandwidthMbit := (stats.TotalNetwork - stats.UsedNetwork) / bytesInMb
+			freeBandwidthMbit := (stats.TotalNetwork - stats.UsedNetwork) / bytesInMbit
 			fmt.Printf("Network bandwidth usage high: %d Mbit/s available\n", freeBandwidthMbit)
 		}
 	}
