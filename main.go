@@ -134,7 +134,7 @@ func checkThresholds(stats *ServerStats) {
 	
 	// Network bandwidth
 	if stats.TotalNetwork > 0 {
-		networkPercent := stats.UsedNetwork / stats.TotalNetwork * 100
+		networkPercent := (stats.UsedNetwork * 100) / stats.TotalNetwork
 		if networkPercent > uint64(networkThreshold) {
 			freeBandwidthMbit := (stats.TotalNetwork - stats.UsedNetwork) / bytesInMb
 			fmt.Printf("Network bandwidth usage high: %d Mbit/s available\n", freeBandwidthMbit)
