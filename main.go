@@ -17,7 +17,6 @@ const (
 	diskThreshold      = 90  // 90%
 	networkThreshold   = 90  // 90%
 	bytesInMb     = 1024 * 1024
-	bytesInMbit   = 125000 // 1 Mbit/s = 125,000 bytes/s
 )
 
 func main() {
@@ -135,9 +134,9 @@ func checkThresholds(stats *ServerStats) {
 	
 	// Network bandwidth
 	if stats.TotalNetwork > 0 {
-		networkPercent := (stats.UsedNetwork * 100) / stats.TotalNetwork
+		networkPercent := stats.UsedNetwork / stats.TotalNetwork * 100
 		if networkPercent > uint64(networkThreshold) {
-			freeBandwidthMbit := (stats.TotalNetwork - stats.UsedNetwork) / bytesInMbit
+			freeBandwidthMbit := (stats.TotalNetwork - stats.UsedNetwork) / bytesInMb
 			fmt.Printf("Network bandwidth usage high: %d Mbit/s available\n", freeBandwidthMbit)
 		}
 	}
