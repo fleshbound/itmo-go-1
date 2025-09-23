@@ -16,7 +16,7 @@ const (
 	memoryThreshold    = 80  // 80%
 	diskThreshold      = 90  // 90%
 	networkThreshold   = 90  // 90%
-	bytesInMb     = 1024 * 1024
+	bytesInMb     = 1000_000
 )
 
 func main() {
